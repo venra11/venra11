@@ -1,0 +1,119 @@
+---
+title: "Wines"
+author: "Joshue Fuentes"
+date: "2025-01-27"
+output: html_document
+---
+
+**Abstract:**
+
+This is a technical blog post of **both** an HTML file *and* [.qmd file](src/wine_of_pnw.qmd) hosted on GitHub pages.
+
+
+**Step Up Code:**
+
+```{r}
+library(tidyverse) # change r to {r} to run this block, then remove this comment
+
+wine <- readRDS(gzcon(url("https://github.com/cd-public/D505/raw/master/dat/wine.rds"))) %>%
+  filter(province=="Oregon" | province=="California" | province=="New York") %>% 
+  mutate(cherry=as.integer(str_detect(description,"[Cc]herry"))) %>% 
+  mutate(lprice=log(price)) %>% 
+  select(lprice, points, cherry, province)
+```
+
+
+**Explanataion:**
+
+> <span style="color:red;font-weight:bold">TODO</span>: *write your line-by-line explanation of the code here*
+
+The first line loads a wine data set from a remote .rds file into Rstudio. The following line filters the data set to include only wines from Oregon, California, or New York. The next line adds a new column cherry to indicate whether the wine description mentions "cherry." (as an integer) The line after adds a new column lprice that is the natural logarithm of the wine price. The last line selects only the columns lprice, points, cherry, and province to be observed in the wine data set.
+
+# Multiple Regression
+
+## Linear Models
+
+First run a linear regression model with log of price as the dependent variable and 'points' and 'cherry' as features (variables).
+
+```{r}
+# TODO: hint: 
+lm <- lm(lprice ~ points + cherry, data = wine)
+summary(lm)
+```
+
+```{r}
+#get_regression_summaries(lm) (breaking while knitting)
+```
+
+
+**Explanation:**
+
+> <span style="color:red;font-weight:bold">TODO</span>: *Created the linear model in the first chunk. In the second chunk I was able to get the regression summary of that model*
+
+> <span style="color:red;font-weight:bold">TODO</span>: *If the the RMSE is measuring the prediction error of our a mode the value of 0.46 can be interpreted as there still being a margin of error to which our wines could be priced at based on the predictors. Although lower values are better it still has that variability in the predictability.*
+
+## Interaction Models
+
+Add an interaction between 'points' and 'cherry'. 
+
+```{r}
+# TODO: hint: 
+lm_interaction <- lm(lprice ~ points * cherry, data = wine)
+#get_regression_summaries(lm_interaction) (breaking while knitting, commented out)
+```
+
+> <span style="color:red;font-weight:bold">TODO</span>: *created a linear model that has points and cherry interacting. Did the same from the last question and got the regression summary as well*
+
+> <span style="color:red;font-weight:bold">TODO</span>: *In this model the RMSE Value indicates a relationship between points and cherry notes. Similar to the last model the RMSE indicates that there is still error in the model for the predictors.*
+
+### The Interaction Variable
+
+> <span style="color:red;font-weight:bold">TODO</span>: *interpret the coefficient on the interaction variable.* <br>[Explain as you would to a non-technical manager.](https://youtube.com/clip/UgkxY7ohjoimIef6zpPLjgQHqJcJHeZptuVm?feature=shared)
+
+## Applications
+
+Determine which province (Oregon, California, or New York), does the 'cherry' feature in the data affect price most?
+
+```{r}
+# TODO: 
+cherry_effect <- wine %>%
+  group_by(province, cherry) %>%
+  summarise(
+    mean_price = mean(lprice, na.rm = TRUE))
+3.7-3.4
+```
+
+> <span style="color:red;font-weight:bold">TODO</span>: *Oregon wines price was affected the most by cherry as a feature.*
+
+# Scenarios
+
+## On Accuracy
+
+Imagine a model to distinguish New York wines from those in California and Oregon. After a few days of work, you take some measurements and note: "I've achieved 91% accuracy on my model!" 
+
+Should you be impressed? Why or why not?
+
+```{r}
+# TODO: 
+wine %>% 
+  count(province) %>% 
+  print()
+
+wine %>% 
+  group_by(province) %>% 
+  summarise(avg_price = mean(lprice, na.rm = TRUE)) %>% 
+  print()
+```
+
+> <span style="color:red;font-weight:bold">TODO</span>: *I would not be impressed by a high percent accuracy on a model. For starters there are so many variable to consider in a model. California is represented overwhelmingly accounting for than half of the observations. The easiest way to view this would be that it can be right some of the time but it will not accuratly where the wine is from based on the other factors. Its like guessing someones height based on there country of origin, you can be right sometimes but will be wrong most of the time. 
+
+## On Ethics
+
+Why is understanding this vignette important to use machine learning in an ethical manner?
+
+> <span style="color:red;font-weight:bold">TODO</span>: *We can create many models from the wines data set but in general we will be able to create a variety of different models that can achieve different goals. The most important part is considering the implications of the models we create. Real world decisions will affect people in different communities depending on the model being explored so it is imperative that all variables are taken into account when considering how to craft a model. It is important to consider what variables are being used in the models*
+
+## Ignorance is no excuse
+Imagine you are working on a model to predict the likelihood that an individual loses their job as the result of the changing federal policy under new presidential administrations. You have a very large dataset with many hundreds of features, but you are worried that including indicators like age, income or gender might pose some ethical problems. When you discuss these concerns with your boss, she tells you to simply drop those features from the model. Does this solve the ethical issue? Why or why not?
+
+> <span style="color:red;font-weight:bold">TODO</span>: *It does not. The model would be less representative of the population by eliminating such factors. It very easily could lead to assumptions that then lead to actions that do not consider the difference demographics. It is a misrepresentation of the data, that could have posed some ethical considerations but now it eliminates them all together which is more unethical than former situation*
